@@ -1,5 +1,6 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
+author: "Carolina San Martín"
 output: 
   html_document:
     keep_md: true
@@ -7,11 +8,37 @@ output:
 
 
 ## Loading and preprocessing the data
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 
+# Charging required libraries
+library(dplyr)
+
+
+```
+
+```{r load and clean data}
+# Unzip and read csv data
+activity <- unzip("activity.zip")
+data <- read.csv("activity.csv")
+rm(activity)
+
+# Primary clean-up: omit NA values and convert data variable to date format
+data <- na.omit(data)
+date <- as.Date(data$date)
+```
 
 
 ## What is mean total number of steps taken per day?
+```{histogram}
+# Daily steps
+steps_day <- data <- 
 
+hist(x = activity$steps, main = "Histograma de Edad", 
+     xlab = "Steps", ylab = "Frecuencia",
+     col = "purple")
+
+```
 
 
 ## What is the average daily activity pattern?
@@ -23,3 +50,28 @@ output:
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+
+
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
