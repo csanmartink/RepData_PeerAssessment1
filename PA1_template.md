@@ -29,14 +29,8 @@ date <- as.Date(data$date)
 # Daily steps
 steps_day <- data %>% 
     group_by(date) %>% 
-    summarize(total_steps=sum(steps))
-```
+    summarise(total_steps=sum(steps))
 
-```
-## `summarise()` ungrouping output (override with `.groups` argument)
-```
-
-```r
 # Graph daily data in an histogram
 hist(x = steps_day$total_steps, 
      main = "Histogram of number of steps each day", 
@@ -61,14 +55,8 @@ The mean of total number of steps taken per day is 1.0766189\times 10^{4} and th
 interval <- as.numeric(data$interval)
 five_av <- data %>% 
     group_by(interval) %>% 
-    summarize(av_steps=mean(steps))
-```
+    summarise(av_steps=mean(steps))
 
-```
-## `summarise()` ungrouping output (override with `.groups` argument)
-```
-
-```r
 # Average activity time-series plot
 plot(five_av$interval, five_av$av_steps, 
      main="Average steps taken in a 5-minute interval",
@@ -96,5 +84,67 @@ na <- sum(is.na(raw_data$steps))
 
 There are 2304 data with NA values in the raw data.
 
+
+```r
+# Create filled dataset assigning mean value to steps variable. First, find the value when interval matches the average, and then, assign the value instead the NA.
+fill_data <- raw_data
+for (j in 1:nrow(fill_data)) {
+    if (is.na(fill_data$steps[j])) {
+        replacing <- which(fill_data$interval[j]==five_av$interval)
+        fill_data$steps[j] <- five_av[replacing,]$av_steps
+    }
+}
+
+# Create data by date using prior filled dataset
+fill_stepsd <- fill_data %>% 
+    group_by(date) %>% 
+    summarise(total_filled_steps=sum(steps))
+
+# Graph with filled data by day
+hist(x = fill_stepsd$total_filled_steps, 
+     main = "Histogram of total number of steps each day with filled dataset", 
+     xlab = "Total steps each day", ylab = "Frequency",
+     col = "purple")
+```
+
+![](PA1_template_files/figure-html/filling na-values-1.png)<!-- -->
+
+```r
+# Descriptive statistics
+filled_mean <- mean(fill_stepsd$total_filled_steps)
+filled_median <- median(fill_stepsd$total_filled_steps)
+```
+
+The mean and median total number of steps taken per day are 1.0766189\times 10^{4} and 1.0766189\times 10^{4}, respectively. The mean is unchanged from the estimates from the first part of the assignment, but the median changed slightly and now is equal to the mean. Imputing missing data based on an average value only affected to median value. 
+
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```r
+# Create weekday variable using weekdays()
+fill_data$date <- as.Date(fill_data$date)
+fill_data$day <- weekdays(fill_data$date)
+
+# Define all days as weekdays
+fill_data$day_type <- "weekday"
+
+# Fix days that are from weekend
+fill_data$day_type[fill_data$day %in% c("Saturday", "Sunday")] <- "weekend"
+
+# Create data by 5-minute interval with filled data
+day_av <- fill_data %>% 
+    group_by(day_type, interval) %>% 
+    summarise(average_steps=mean(steps))
+
+# Graph the two-in-one time-series graphic.
+qplot(interval, average_steps, data=day_av,
+      main="Average steps comparing Weekends vs. Weekdays",
+      type="l",
+      geom="line",
+      xlab="Interval", ylab="Average of Steps",
+      facets =day_type ~ .)
+```
+
+![](PA1_template_files/figure-html/weekdays and weekend analysis-1.png)<!-- -->
+
+Plot presents differences between weekdays and weekend: there are more activity measured in steps on weekdays.
 
