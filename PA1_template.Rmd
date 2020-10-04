@@ -14,64 +14,69 @@ knitr::opts_chunk$set(echo = TRUE)
 # Charging required libraries
 library(dplyr)
 
-
 ```
 
 ```{r load and clean data}
 # Unzip and read csv data
 activity <- unzip("activity.zip")
-data <- read.csv("activity.csv")
+raw_data <- read.csv("activity.csv")
 rm(activity)
 
 # Primary clean-up: omit NA values and convert data variable to date format
-data <- na.omit(data)
+data <- na.omit(raw_data)
 date <- as.Date(data$date)
 ```
 
 
 ## What is mean total number of steps taken per day?
-```{histogram}
+```{r Descriptive analysis, fig.height=4, results="hide"}
 # Daily steps
-steps_day <- data <- 
+steps_day <- data %>% 
+    group_by(date) %>% 
+    summarize(total_steps=sum(steps))
 
-hist(x = activity$steps, main = "Histograma de Edad", 
-     xlab = "Steps", ylab = "Frecuencia",
+# Graph daily data in an histogram
+hist(x = steps_day$total_steps, 
+     main = "Histogram of number of steps each day", 
+     xlab = "Total steps each day", ylab = "Frequency",
      col = "purple")
 
+# Descriptive statistics
+mean_steps <- mean(steps_day$total_steps)
+median_steps <- median(steps_day$total_steps)
 ```
 
+The mean of total number of steps taken per day is `r mean_steps` and the median of total steps by day is `r median_steps`.
 
 ## What is the average daily activity pattern?
+```{r daily-pattern, echo=TRUE, results="hide"}
+#Data by 5 minutes-interval
+interval <- as.numeric(data$interval)
+five_av <- data %>% 
+    group_by(interval) %>% 
+    summarize(av_steps=mean(steps))
 
+# Average activity time-series plot
+plot(five_av$interval, five_av$av_steps, 
+     main="Average steps taken in a 5-minute interval",
+     type="l",
+     xlab="Interval", ylab="Average steps",
+     col = "purple")
+
+# Interval with maximum number of steps
+max <- five_av$interval[which.max(five_av$av_steps)]
+```
+
+The interval with the highest steps counted happened during `r max`.
 
 
 ## Imputing missing values
+```{r na-values}
+# Calculate number of missing values
+na <- sum(is.na(raw_data$steps))
+```
 
-
+There are `r na` data with NA values in the raw data.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-
-
-
-
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
